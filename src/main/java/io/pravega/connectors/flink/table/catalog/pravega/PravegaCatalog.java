@@ -10,15 +10,29 @@ import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.factories.TableFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static org.apache.flink.table.descriptors.ConnectorDescriptorValidator.CONNECTOR;
 
 @Slf4j
 public class PravegaCatalog extends AbstractCatalog {
     private StreamManager streamManager;
+    private String controllerUri;
+    private Map<String, String> properties;
 
-    public PravegaCatalog(String catalogName, String defaultDatabase) {
+    public PravegaCatalog(String controllerUri, String catalogName, Map<String, String> props, String defaultDatabase) {
         super(catalogName, defaultDatabase);
+
+        this.controllerUri = controllerUri;
+        this.properties = new HashMap<>();
+        for (Map.Entry<String, String> kv : props.entrySet()) {
+            properties.put(CONNECTOR + "." + kv.getKey(), kv.getValue());
+        }
+
+        log.info("Created Pravega Catalog {}", catalogName);
     }
 
     @Override
@@ -43,9 +57,7 @@ public class PravegaCatalog extends AbstractCatalog {
 
     @Override
     public List<String> listDatabases() throws CatalogException {
-        try {
-            return streamManager.listScope();
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -65,12 +77,26 @@ public class PravegaCatalog extends AbstractCatalog {
 
     @Override
     public void createDatabase(String name, CatalogDatabase database, boolean ignoreIfExists) throws DatabaseAlreadyExistException, CatalogException {
-        throw new UnsupportedOperationException();
+        try {
+            streamManager.createScope(name);
+        } catch (Exception e) {
+            if (!ignoreIfExists) {
+                throw new DatabaseAlreadyExistException(getName(), name, e);
+            }
+            else throw new CatalogException(String.format("Failed to create database %s", name), e);
+        }
     }
 
     @Override
     public void dropDatabase(String name, boolean ignoreIfNotExists) throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
-        throw new UnsupportedOperationException();
+        try {
+            streamManager.deleteScope(name);
+        } catch (Exception e) {
+            if (!ignoreIfNotExists) {
+                throw new DatabaseNotExistException(getName(), name);
+            }
+            else throw new CatalogException(String.format("Failed to create database %s", name), e);
+        }
     }
 
     @Override
@@ -80,7 +106,11 @@ public class PravegaCatalog extends AbstractCatalog {
 
     @Override
     public List<String> listTables(String databaseName) throws DatabaseNotExistException, CatalogException {
-        throw new UnsupportedOperationException();
+        try {
+            streamManager.listStreams(databaseName);
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
