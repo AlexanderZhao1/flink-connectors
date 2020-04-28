@@ -106,11 +106,7 @@ public class PravegaCatalog extends AbstractCatalog {
 
     @Override
     public List<String> listTables(String databaseName) throws DatabaseNotExistException, CatalogException {
-        try {
-            streamManager.listStreams(databaseName);
-        } catch (Exception e) {
-
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override

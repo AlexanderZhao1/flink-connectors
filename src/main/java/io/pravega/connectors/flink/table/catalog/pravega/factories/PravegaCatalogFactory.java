@@ -28,7 +28,6 @@ public class PravegaCatalogFactory implements CatalogFactory {
     public Map<String, String> requiredContext() {
         HashMap<String, String> context = new HashMap<>();
         context.put(CATALOG_TYPE, CATALOG_TYPE_VALUE_PRAVEGA);
-        // TODO: check whether this is "1" or not
         context.put(CATALOG_PROPERTY_VERSION, "1");
         return context;
     }
@@ -36,9 +35,9 @@ public class PravegaCatalogFactory implements CatalogFactory {
     @Override
     public List<String> supportedProperties() {
         List props = new ArrayList<String>();
+        props.add(CATALOG_CONTROLLER_URI);
         props.add(CATALOG_DEFAULT_DATABASE);
         props.add(CATALOG_PRAVEGA_VERSION);
-        props.add(CATALOG_CONTROLLER_URI);
         return props;
     }
 
